@@ -1,0 +1,17 @@
+[package]
+name = "polkadot-update-tool"
+version = "0.1.0"
+authors = ["Andrew Plaza <aplaza@liquidthink.net>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ureq = { version = "1.3.0", features = ["json"] }
+cargo-lock = "4.0.1"
+serde = "1.0.114"
+tar = "0.4.29"
+flate2 = "1.0.16"
+anyhow = "1.0.32"
+log = "0.4.11"
+termimad = "0.8.25"
