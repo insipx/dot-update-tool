@@ -23,7 +23,7 @@ use tar::Archive;
 use cargo_lock::Lockfile;
 use std::str::FromStr;
 use anyhow::Result;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use termimad::*;
 
 
@@ -35,14 +35,16 @@ fn main() -> anyhow::Result<()> {
 
     if revisions.len() == 1 {
         println!(
-        "
-        ----------------- Polkadot Update Tool -----------------
-        Latest Polkadot Version: {}    
-        Latest version is pinned to substrate revision: {}
-        \n\n
-        {}
-        ----------------- Polkadot Update Tool -----------------
-        ", release.name, revisions[0], skin.term_text(&release.body));
+"
+----------------- Polkadot Update Tool -----------------
+Latest Polkadot Version: {}    
+Latest version is pinned to substrate revision: {}
+\n
+{}
+\n
+{}
+{}
+", release.name, revisions[0], skin.term_text(&release.body), skin.inline("*Downloads*"), print_release_download_count(&release));
     } else {
         panic!("Detected that latest polkadot is pinned to multiple revisions. This should not happen under normal circumstances");
     }
@@ -89,4 +91,23 @@ fn get_latest_release() -> Result<LatestRelease> {
         .timeout_connect(10_000)
         .call()
         .into_json_deserialize::<LatestRelease>().map_err(Into::into)
+}
+
+fn release_asset_download_count(release: &LatestRelease) -> HashMap<String, usize> {
+    let mut map = HashMap::new();
+    release.assets.iter().for_each(|a| {
+        map.insert(a.name.clone(), a.download_count);
+    });
+    map
+}
+
+fn print_release_download_count(release: &LatestRelease) -> String {
+    let mut buf = String::new();
+    
+    let count = release_asset_download_count(release);
+
+    for (name, count) in count.into_iter() {
+        buf.push_str(format!("{} Downloaded {} times\n", name, count).as_str())
+    }
+    buf
 }
