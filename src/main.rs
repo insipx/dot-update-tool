@@ -32,25 +32,28 @@ fn main() -> anyhow::Result<()> {
     let lockfile = get_latest_lockfile(&release)?;
     let revisions: Vec<String> = get_all_substrate_deps(lockfile).into_iter().collect();
     let skin = MadSkin::default();
-
+    let (mut width, _) = terminal_size();
+    if width > 80 {
+        width = 80;
+    }
+    let release_text = FmtText::from(&skin, &release.body, Some(width as usize));
     if revisions.len() == 1 {
         println!(
 "
 ----------------- Polkadot Update Tool -----------------
-Latest Polkadot Version: {}    
-Latest version is pinned to substrate revision: {}
+{}    
+Pinned to substrate revision: {}
 \n
 {}
 \n
 {}
 {}
-", release.name, revisions[0], skin.term_text(&release.body), skin.inline("*Downloads*"), print_release_download_count(&release));
+", release.name, revisions[0], release_text, skin.inline("*Downloads*"), print_release_download_count(&release));
     } else {
         panic!("Detected that latest polkadot is pinned to multiple revisions. This should not happen under normal circumstances");
     }
     Ok(()) 
 }
-
 
 fn get_latest_lockfile(release: &LatestRelease) -> Result<Lockfile> {
     let tarball_gz = ureq::get(release.tarball_url.as_str())
